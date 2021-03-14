@@ -56,7 +56,7 @@ bruteforce.zip
 └── readme.txt
 ```
 
-Viewing the contents of `Desktop.zip` file (**is encrypted**):
+Viewing the contents of `Desktop.zip` file (**is encrypted**), there is:
 ```
 Desktop.zip
 ├── answer
@@ -96,6 +96,11 @@ Instead, I should be giving in a plaintext file that is compressed but not encry
 
 Reading through the bkcrack's readme and `bkcrack -h` to properly understand the program and arguments to put in, I managed to get it to work:
 
+The format of the command is:  
+`bkcrack -C encrypted_zip -c encrypted_file -P unencrypted_zip -p plaintext_file`
+
+You first specify the `encrypted_zip` (`Desktop.zip`) and `unencrypted_zip` (`brute_force.zip`). Using the zip files (assuming the compression algorithm is the same) ensures that both of them are compressed, so the only difference is that one is encrypted and one isn't. Then, specify which files in the zips are the ciphertext and plaintext. For this challenge, we are comparing the `readme.txt` file (same name in both of the zips), so we will use that as the `encrypted_file` and `plaintext_file`.
+
 ```
 C:\Users\User\Documents\temp\brute_force>bkcrack -C Desktop.zip -c readme.txt -P brute_force.zip -p readme.txt
 bkcrack 1.0.0 - 2020-11-11
@@ -110,11 +115,9 @@ Keys: 43a39e40  bec2896 f893722e
 43a39e40  bec2896 f893722e
 ```
 
-The format of the command is this: `bkcrack -C encrypted_zip -c encrypted_file -P unencrypted_zip -p plaintext_file`, where:  
-The known plaintext file `plaintext_file` and the corresponding encrypted file `encrypted_file` are the `readme.txt` files.  
-These files should both be compressed and inside a zip file. The zip files are `Desktop.zip` for the encrypted readme and `brute_force.zip` for the plaintext readme.
+From this we get the keys `43a39e40  bec2896 f893722e`.
 
-*Note: I moved the `Desktop.zip` and `brute_force.zip` to the same directory*
+*Note: The `Desktop.zip` and `brute_force.zip` should be in the same directory for the above command to work*
 
 The final step is to use the keys output to **decrypt** and **decompress** the encrypted `flag.txt`
 
@@ -161,7 +164,7 @@ By manually browsing in the `indexable_text` table, I found a message "LNCn0tth4
 
 ### Solution
 
-First thing that I noticed is that the description said "Signal" ... with the whole [whatsapp privacy thing](https://www.theguardian.com/technology/2021/jan/24/whatsapp-loses-millions-of-users-after-terms-update) that went on a while back and people moving to the Signal app, this gave me a clue.
+First thing that I noticed is that the description said "Signal" ... with the whole [whatsapp privacy thing](https://www.theguardian.com/technology/2021/jan/24/whatsapp-loses-millions-of-users-after-terms-update) that went on a while back and people moving to the Signal app, this gave me a clue:
 
 Searching up "signal sqlite keychain" on google, I managed to find something that seems to be very promising: [HowTo-decrypt-Signal.sqlite-for-IOS by Magpol](https://github.com/Magpol/HowTo-decrypt-Signal.sqlite-for-IOS)  
 > Signal is storing the DB-key in the keyvalue "GRDBDatabaseCipherKeySpec" ... The Key and value are then stored in the keychain.
@@ -192,7 +195,7 @@ The important part would probably be the **`Keychain Data (Hex): 0x26c864d5999a6
 
 *Note: In the `keychain.txt` file there is 2 of such entries, but they are both the same.*
 
-Next thing is the `secret.sqlite` file... I already had a sqlite database browser ([DB Browser for SQLite](https://sqlitebrowser.org/)) so I tried to open the file with it, but it said "unsupported file format". 
+Next thing is the `secret.sqlite` file... I already had a sqlite database browser ([DB Browser (SQLite)](https://sqlitebrowser.org/)) so I tried to open the file with it, but it said "unsupported file format". 
 
 When I was installing the DB Browser, the installer also installed a version called "**DB Browser (SQLCipher)**". I never really used it before but since this is a Crypto challenge, might as well try it out: 
 
